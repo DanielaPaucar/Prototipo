@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Prototipo: carnet de medio pasaje en la app ISIL</title>
+<style>
+:root{--bg:#eef2f6;--ink:#1b2430;--muted:#5b6776;--card:#fff;--line:#d3dae3;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14181e;--ink:#e8edf3;--muted:#9aa6b4;--card:#1d242d;--line:#33404f}}
+:root[data-theme="dark"]{--bg:#14181e;--ink:#e8edf3;--muted:#9aa6b4;--card:#1d242d;--line:#33404f}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Roboto,system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.45}
+main{max-width:420px;margin:0 auto;padding:20px 16px 32px}
+h1{font-size:18px;margin:0 0 4px}
+.sub{color:var(--muted);font-size:14px;margin:0 0 12px}
+.cap{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:14px;min-height:62px}
+.cap b{display:block;font-size:15px}
+.fs{display:flex;gap:6px;margin-bottom:12px}
+.fs button,.ctl button{flex:1;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;padding:9px 4px;font-size:13px;cursor:pointer;font-family:inherit}
+.fs button.on{background:#00a9f4;color:#fff;border-color:#00a9f4;font-weight:600}
+.ctl{display:flex;gap:8px;margin-top:14px}
+.ctl .demo{background:#00a9f4;color:#fff;border-color:#00a9f4;font-weight:600;font-size:15px;padding:11px}
+.stage{perspective:1000px;padding:6px 0}
+.tilt{position:relative;width:100%;max-width:340px;margin:0 auto;transition:transform 1.4s ease}
+.phone{width:100%;height:620px;background:#fafafa;border:6px solid #222;border-radius:26px;overflow:hidden;display:flex;flex-direction:column;color:#1d1d1f;box-shadow:0 18px 36px rgba(0,0,0,.35)}
+.bar{background:#00a9f4;color:#fff;height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;font-weight:600;flex:none}
+.av{width:30px;height:30px;border-radius:50%;background:#cfe9f7;overflow:hidden;flex:none}.av svg{width:100%;height:100%;display:block}
+.bell{position:relative;background:none;border:0;color:#fff;font-size:20px;cursor:pointer;padding:4px}
+.dot{position:absolute;top:3px;right:3px;width:10px;height:10px;border-radius:50%;background:#e53935;border:1px solid #fff}
+.body{flex:1;overflow:auto;padding:14px;scroll-behavior:smooth}
+.hi{font-size:22px;font-weight:700;margin:0 0 12px}
+.card{background:#f5f0fa;border-radius:10px;padding:12px;box-shadow:0 1px 4px rgba(0,0,0,.18);margin-bottom:14px}
+.card h3{margin:0 0 8px;font-size:15px}
+.steps{display:flex;align-items:center;margin:6px 0 10px}
+.steps i{width:12px;height:12px;border-radius:50%;background:#cbc3d6;flex:none}
+.steps i.on{background:#00a9f4}.steps i.cur{background:#00a9f4;box-shadow:0 0 0 4px rgba(0,169,244,.3)}
+.steps s{flex:1;height:2px;background:#cbc3d6}.steps s.on{background:#00a9f4}
+.st{font-weight:700;font-size:15px}
+.muted{color:#6a6a74;font-size:13px}
+.btn{display:block;width:100%;border:0;border-radius:8px;background:#00a9f4;color:#fff;font-size:15px;font-weight:600;padding:11px;margin-top:10px;cursor:pointer;font-family:inherit}
+.link{background:none;border:0;color:#0a74b0;font-weight:600;padding:6px 0 0;cursor:pointer;font-size:14px;font-family:inherit}
+.tl{list-style:none;margin:0 0 12px;padding:0}
+.tl li{position:relative;padding:0 0 14px 30px;font-size:14px}
+.tl li::before{content:"";position:absolute;left:5px;top:3px;width:14px;height:14px;border-radius:50%;border:2px solid #b9b9c2;background:#fff}
+.tl li::after{content:"";position:absolute;left:11px;top:19px;bottom:-3px;width:2px;background:#d6d6dd}
+.tl li:last-child::after{display:none}
+.tl li.done::before{background:#1db954;border-color:#1db954}
+.tl li.cur::before{background:#00a9f4;border-color:#00a9f4;box-shadow:0 0 0 4px rgba(0,169,244,.3)}
+.tl li.cur{font-weight:700}
+.tl small{display:block;font-weight:400;color:#6a6a74}
+.box{background:#e8f6fd;border-radius:8px;padding:10px;font-size:14px;margin-bottom:10px}
+.ok{background:#e4f6ea}
+.row{display:flex;justify-content:space-between;font-size:14px;padding:6px 0;border-top:1px solid #e3e3e8}
+.note{display:block;padding:12px;background:#fff;border-radius:8px;border:2px solid #00a9f4;font-size:14px;cursor:pointer;text-align:left;width:100%;font-family:inherit;color:inherit;margin-bottom:10px}
+textarea{width:100%;min-height:96px;border:1px solid #c9c9d1;border-radius:8px;padding:10px;font:inherit;font-size:14px;resize:none}
+.empty{background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.14);padding:16px;text-align:center;color:#8a8a92;font-size:14px;margin-bottom:16px}
+.h2{font-size:20px;font-weight:700;margin:0 0 10px}
+.notas{background:#f5f0fa;border-radius:10px;padding:4px 12px;box-shadow:0 1px 4px rgba(0,0,0,.18)}
+.nr{display:flex;justify-content:space-between;align-items:center;padding:9px 0}
+.nr b{font-size:13px;display:block}.nr small{color:#8a8a92;font-size:12px}
+.g{width:38px;height:38px;border-radius:50%;border:3px solid #1db954;color:#1db954;display:grid;place-items:center;font-weight:700;font-size:15px;flex:none}
+.nav{display:flex;border-top:1px solid #d3d3da;background:#fff;flex:none;height:54px}
+.nav span{flex:1;text-align:center;font-size:11px;color:#6a6a74;padding-top:6px}
+.nav .nv{cursor:pointer}
+.nav svg{display:block;width:22px;height:22px;margin:0 auto 2px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nav span.a{color:#00a9f4}
+.finger{position:absolute;left:0;top:0;width:30px;height:30px;border-radius:50%;background:rgba(255,152,0,.45);border:2px solid #ff9800;pointer-events:none;opacity:0;z-index:5;transition:transform 1s ease,opacity .3s}
+.finger.tap{box-shadow:0 0 0 12px rgba(255,152,0,.25)}
+.tc{position:absolute;inset:0;border-radius:26px;background:rgba(5,8,13,.86);color:#fff;display:grid;place-items:center;text-align:center;font-size:22px;font-weight:600;padding:30px;opacity:0;pointer-events:none;transition:opacity .5s;z-index:6}
+.bell:focus-visible,.btn:focus-visible,.link:focus-visible,.note:focus-visible,.fs button:focus-visible,.ctl button:focus-visible{outline:3px solid #ff9800;outline-offset:2px}
+@media (prefers-reduced-motion:reduce){.tilt,.finger,.tc,.body{transition:none;scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<main>
+<h1>Prototipo: carnet de medio pasaje en la app ISIL</h1>
+<p class="sub">Baja fidelidad. Toca la tarjeta, la campana y los botones. Las fases muestran cómo cambia el trámite con el tiempo.</p>
+<div class="cap" id="cap" aria-live="polite"></div>
+<div class="fs" id="fs"><button data-ph="0">Fase 1: Enviada</button><button data-ph="1">Fase 2: Pendiente</button><button data-ph="2">Fase 3: Carnet listo</button></div>
+<div class="stage"><div class="tilt" id="tilt"><div class="phone" id="phone"></div><div class="finger" id="fing"></div><div class="tc" id="tc"></div></div></div>
+<div class="ctl"><button id="demo" class="demo">&#9654; Ver demo</button></div>
+</main>
+<script>
+var N=["Registrada","Enviada a Minedu","Pendiente de entrega por Minedu","Lista para recojo","Entregada"];
+var D0="13 de abril",D1="20 de abril",D2="4 de mayo, 18 de mayo y 1 de junio",D3="10 de junio",U2="1 de junio";
+var PH=[
+{c:1,d:[D0,D1,"","",""],m:"Tu solicitud fue enviada a Minedu el 20 de abril. La emisión depende de Minedu.",u:D1,n:"Minedu"},
+{c:2,d:[D0,D1,"Se actualiza cada 2 semanas desde el 4 de mayo","",""],m:"Minedu aún no entrega los carnets de este envío. Tu solicitud sigue vigente y esta etapa se actualiza cada 2 semanas.",u:"4 de mayo",n:"Minedu"},
+{c:3,d:[D0,D1,"Actualizada hasta el "+U2,D3,""],m:"Puedes recogerlo en Consejería Académica de la sede San Isidro. El pago es con tarjeta o Yape.",u:D3,n:"Tú: recoger tu carnet"}];
+var NT=[null,["Tu carnet de medio pasaje cambió de estado","Ahora: Pendiente de entrega por Minedu.","4 de mayo"],["¡Tu carnet de medio pasaje ya llegó a ISIL!","Ya puedes recogerlo en la sede San Isidro.",D3]];
+var ph=0,vw="home",unread=false,sent=false,demoOn=false,tok=0,calm=matchMedia("(prefers-reduced-motion:reduce)").matches;
+var HINT='<b>Pruébalo</b>Toca “Ver detalle” o la campana. Con “Home” abajo vuelves al inicio.';
+var IC={Home:'<path d="M3 11l9-8 9 8v10h-6v-6H9v6H3z"/>',Carnet:'<rect x="5" y="3" width="14" height="18" rx="2"/><circle cx="12" cy="10" r="2.5"/><path d="M8 17c.8-2 2.4-3 4-3s3.2 1 4 3"/>',Cursos:'<path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4M10 12h5M10 16h5"/>',Horario:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',Menu:'<path d="M4 7h16M4 12h16M4 17h16"/>'};
+function bar(t){return '<div class="bar"><span class="av"><svg viewBox="0 0 24 24" aria-label="Foto de perfil"><circle cx="12" cy="9" r="4.3" fill="#7a8a99"/><path d="M3.5 24c0-5.4 3.8-8.6 8.5-8.6s8.5 3.2 8.5 8.6z" fill="#7a8a99"/></svg></span><span>'+t+'</span><button class="bell" data-view="notifs" aria-label="Notificaciones">&#128276;'+(unread?'<span class="dot"></span>':'')+'</button></div>'}
+function nav(a){return '<div class="nav">'+["Home","Carnet","Cursos","Horario","Menu"].map(function(x){return '<span class="'+(x===a?'a ':'')+(x==="Home"?'nv" data-view="home':'')+'"><svg viewBox="0 0 24 24" aria-hidden="true">'+IC[x]+'</svg>'+x+'</span>'}).join('')+'</div>'}
+function steps(c){var h='';for(var i=0;i<5;i++){h+=(i?'<s class="'+(i<=c?'on':'')+'"></s>':'')+'<i class="'+(i<c?'on':i==c?'cur':'')+'"></i>'}return '<div class="steps">'+h+'</div>'}
+function tl(c,d){return '<ul class="tl">'+N.map(function(n,i){return '<li class="'+(i<c?'done':i==c?'cur':'')+'">'+n+(d[i]?'<small>'+d[i]+'</small>':'')+'</li>'}).join('')+'</ul>'}
+var V={
+home:function(){var p=PH[ph];return bar('Home')+'<div class="body"><p class="hi">Hola Camila Andrea</p><div class="card"><h3>Tu carnet de medio pasaje</h3>'+steps(p.c)+'<div class="st">'+N[p.c]+'</div><div class="muted">Actualizado: '+p.u+'</div><button class="link" data-view="detail">Ver detalle</button></div><div class="empty">No tienes clases programadas para hoy</div><p class="h2">Últimas notas</p><div class="notas"><div class="nr"><div><b>MARKETING DIGITAL</b><small>PA2</small></div><span class="g">17</span></div><div class="nr"><div><b>ESTADISTICA APLICADA</b><small>AV2</small></div><span class="g">16</span></div><div class="nr"><div><b>GESTION DE PROYECTOS TI</b><small>PA2</small></div><span class="g">19</span></div></div></div>'+nav('Home')},
+detail:function(){var p=PH[ph];return bar('Carnet de medio pasaje')+'<div class="body">'+(ph==2?'<div class="box ok"><b>¡Tu carnet de medio pasaje ya llegó a ISIL!</b></div>':'')+tl(p.c,p.d)+'<div class="box">'+p.m+'</div><div class="row"><span>Última actualización</span><b>'+p.u+'</b></div><div class="row"><span>Siguiente paso</span><b>'+p.n+'</b></div><div class="row"><span>Sede de recojo</span><b>San Isidro</b></div>'+(ph<2?'<div class="box" style="margin-top:10px">¿Tienes dudas? Puedes preguntar a Consejería Académica cómo va tu trámite.</div><button class="btn" data-view="msg">Enviar mensaje a Consejería Académica</button>':'')+'</div>'+nav('Home')},
+notifs:function(){var h='';for(var i=ph;i>0;i--){h+='<button class="note" data-view="detail"><b>'+NT[i][0]+'</b><br>'+NT[i][1]+'<div class="muted">'+NT[i][2]+'</div></button>'}return bar('Notificaciones')+'<div class="body">'+(h||'<p class="muted">No tienes avisos nuevos.</p>')+'</div>'+nav('')},
+msg:function(){return bar('Consejería Académica')+'<div class="body"><p class="muted">Tu mensaje sobre el carnet de medio pasaje</p><textarea id="msg" placeholder="Escribe tu duda aquí" '+(sent?'readonly':'')+'>'+(sent?'Hola, quisiera saber cómo va mi solicitud del carnet de medio pasaje.':'')+'</textarea>'+(sent?'<div class="box ok" style="margin-top:10px">Tu mensaje fue enviado. Consejería Académica te responderá lo antes posible.</div>':'<button class="btn" id="send">Enviar mensaje</button>')+'</div>'+nav('Home')}
+};
+function render(){document.getElementById("phone").innerHTML=V[vw]();
+document.querySelectorAll("#fs button").forEach(function(b){b.classList.toggle("on",+b.dataset.ph===ph)})}
+function go(v){vw=v;if(v==="notifs")unread=false;render()}
+function setPh(p){ph=p;unread=p>0;sent=false;vw="home";render()}
+function say(a,b){document.getElementById("cap").innerHTML="<b>"+a+"</b>"+b}
+function tilt(y,x){document.getElementById("tilt").style.transform=calm?"none":"rotateY("+y+"deg) rotateX("+x+"deg)"}
+function sleep(ms){return new Promise(function(r){setTimeout(r,ms)})}
+function fing(on,el){var f=document.getElementById("fing");if(!on||!el){f.style.opacity=0;return}
+var p=document.getElementById("phone"),pr=p.getBoundingClientRect(),r=el.getBoundingClientRect(),sx=p.offsetWidth/pr.width,sy=p.offsetHeight/pr.height;
+f.style.opacity=1;f.style.transform="translate("+((r.left+r.width/2-pr.left)*sx-15)+"px,"+((r.top+r.height/2-pr.top)*sy-15)+"px)"}
+async function tap(sel,my){var b=document.querySelector(".body"),el=document.querySelector(sel);if(!el)return;
+if(b&&b.contains(el)){var r=el.getBoundingClientRect(),br=b.getBoundingClientRect();if(r.bottom>br.bottom-12){b.scrollTop+=r.bottom-br.bottom+70;await sleep(800)}}
+if(tok!==my)return;fing(true,document.querySelector(sel));await sleep(1100);if(tok!==my)return;
+var f=document.getElementById("fing");f.classList.add("tap");await sleep(450);f.classList.remove("tap")}
+async function trans(t,ms,fn){var c=document.getElementById("tc");fing(false);c.textContent=t;c.style.opacity=1;await sleep(700);if(fn)fn();await sleep(ms);c.style.opacity=0;await sleep(500)}
+function stopDemo(){tok++;demoOn=false;fing(false);tilt(0,0);document.getElementById("tc").style.opacity=0;document.getElementById("demo").innerHTML="&#9654; Ver demo";render();document.getElementById("cap").innerHTML=HINT}
+async function demo(){
+if(demoOn){stopDemo();return}
+var my=++tok;demoOn=true;document.getElementById("demo").textContent="Detener demo";
+var ok=function(){return tok===my};
+ph=0;vw="home";unread=false;sent=false;render();tilt(-7,3);
+say("Paso 1 de 7: Inicio","Camila abre la app y ve en el Home la tarjeta de su carnet de medio pasaje.");await sleep(3200);if(!ok())return;
+await tap(".link",my);if(!ok())return;go("detail");tilt(6,3);say("Paso 2 de 7: Acción principal","Entra al detalle: ve la etapa, las fechas y que el siguiente paso depende de Minedu.");await sleep(4500);if(!ok())return;
+await trans("Pasaron 2 semanas…",1200,function(){ph=1;unread=true;render()});if(!ok())return;
+tilt(-6,2);say("Paso 3 de 7: Aviso","Aparece un punto rojo en la campana. Lo abre y ve que su carnet cambió de estado.");await sleep(2500);if(!ok())return;
+await tap(".bell",my);if(!ok())return;go("notifs");await sleep(1800);if(!ok())return;
+await tap(".note",my);if(!ok())return;go("detail");tilt(6,3);say("Paso 4 de 7: Detalle actualizado","Sigue pendiente de Minedu, pero su solicitud sigue vigente y ve la fecha de actualización.");await sleep(4200);if(!ok())return;
+await tap(".btn",my);if(!ok())return;go("msg");tilt(-6,2);say("Paso 5 de 7: Mensaje a Consejería Académica","Escribe su duda y la envía.");await sleep(1200);if(!ok())return;
+var ta=document.getElementById("msg"),tx="Hola, quisiera saber cómo va mi solicitud del carnet de medio pasaje.";
+for(var i=1;i<=tx.length;i++){if(!ok())return;ta.value=tx.slice(0,i);await sleep(45)}
+await sleep(600);await tap("#send",my);if(!ok())return;sent=true;render();say("Paso 6 de 7: Confirmación","Recibe la confirmación: Consejería Académica responderá lo antes posible.");await sleep(3200);if(!ok())return;
+await trans("Pasaron 5 semanas…",1200,function(){ph=2;unread=true;sent=false;vw="detail";render()});if(!ok())return;
+tilt(6,2);say("Paso 7 de 7: Beneficio","Le llega el aviso de que su carnet ya llegó. Lo abre y ve dónde recogerlo.");await sleep(2500);if(!ok())return;
+await tap(".bell",my);if(!ok())return;go("notifs");await sleep(1800);if(!ok())return;
+await tap(".note",my);if(!ok())return;go("detail");tilt(5,2);await sleep(5200);if(!ok())return;
+stopDemo()}
+document.getElementById("demo").onclick=demo;
+document.getElementById("fs").onclick=function(e){var b=e.target.closest("[data-ph]");if(b&&!demoOn){setPh(+b.dataset.ph)}};
+document.getElementById("phone").onclick=function(e){if(demoOn)return;
+var t=e.target.closest("[data-view]");if(t){go(t.dataset.view);return}
+if(e.target.id==="send"){sent=true;render()}};
+render();document.getElementById("cap").innerHTML=HINT;
+</script>
+</body>
+</html>
